@@ -38,10 +38,11 @@ class ResolutionError(RuntimeError):
 
 class Resolver:
     def __init__(self, client: PyPIClient, *, allow_pre: bool = False,
-                 prefer_binary: bool = True, log=print):
+                 prefer_binary: bool = True, no_deps: bool = False, log=print):
         self.client = client
         self.allow_pre = allow_pre
         self.prefer_binary = prefer_binary
+        self.no_deps = no_deps
         self.tags = compatible_tags()
         self.log = log
 
@@ -80,6 +81,8 @@ class Resolver:
         return list(chosen.values())
 
     def _enqueue_deps(self, candidate: Candidate, queue: list):
+        if self.no_deps:
+            return
         # A dependency applies if its marker is satisfied under *any* of the
         # extras activated on this candidate (plus the no-extra environment).
         # We evaluate that here — where the parent's extras are known — and then

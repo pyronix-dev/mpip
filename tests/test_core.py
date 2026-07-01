@@ -10,7 +10,7 @@ import unittest
 
 from mpip.markers import evaluate
 from mpip.requirements import Requirement, WheelInfo, canonical_name
-from mpip.tags import compatible_tags
+from mpip.tags import _manylinux_platforms, compatible_tags
 from mpip.version import InvalidVersion, SpecifierSet, Version
 
 
@@ -110,6 +110,31 @@ class TestWheel(unittest.TestCase):
         w = WheelInfo("foo-1.0-py2.py3-none-any.whl")
         self.assertIn(("py3", "none", "any"), w.tags)
         self.assertIn(("py2", "none", "any"), w.tags)
+
+
+class TestManylinux(unittest.TestCase):
+    def test_glibc_2_35_x86_64(self):
+        plats = _manylinux_platforms(2, 35, "x86_64")
+        # A wheel needing an older/equal glibc is compatible with a newer host.
+        self.assertIn("manylinux_2_28_x86_64", plats)   # e.g. torch wheels
+        self.assertIn("manylinux_2_17_x86_64", plats)
+        self.assertIn("manylinux2014_x86_64", plats)     # legacy alias for 2_17
+        self.assertIn("manylinux2010_x86_64", plats)     # legacy alias for 2_12
+        self.assertIn("manylinux1_x86_64", plats)        # legacy alias for 2_5
+        # Newest is preferred (appears before older baselines).
+        self.assertLess(plats.index("manylinux_2_35_x86_64"),
+                        plats.index("manylinux_2_17_x86_64"))
+        # A wheel needing a *newer* glibc than the host must NOT be listed.
+        self.assertNotIn("manylinux_2_36_x86_64", plats)
+
+    def test_wheel_matching_on_simulated_linux(self):
+        supported = [("cp311", "cp311", p)
+                     for p in _manylinux_platforms(2, 35, "aarch64")]
+        w = WheelInfo("torch-2.8.0-cp311-cp311-manylinux_2_28_aarch64.whl")
+        self.assertIsNotNone(w.is_compatible(supported))
+        # An x86_64 wheel is not compatible with an aarch64 tag set.
+        w2 = WheelInfo("torch-2.8.0-cp311-cp311-manylinux_2_28_x86_64.whl")
+        self.assertIsNone(w2.is_compatible(supported))
 
 
 class TestTags(unittest.TestCase):

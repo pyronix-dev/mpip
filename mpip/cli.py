@@ -42,6 +42,7 @@ def cmd_install(args) -> int:
         client,
         allow_pre=args.pre,
         prefer_binary=True,
+        no_deps=args.no_deps,
         log=print,
     )
 
@@ -88,7 +89,7 @@ def cmd_install(args) -> int:
         scripts_dir = sysconfig.get_path("scripts")
 
     installer = Installer(client, target, scripts_dir=scripts_dir, log=print,
-                          force=args.force_reinstall)
+                          force=args.force_reinstall or args.upgrade)
     print(f"Installing into {target}")
 
     try:
@@ -205,6 +206,12 @@ def build_parser() -> argparse.ArgumentParser:
                            help="Install into the per-user site-packages")
     p_install.add_argument("--pre", action="store_true",
                            help="Allow pre-release versions")
+    p_install.add_argument("--no-deps", action="store_true",
+                           help="Install only the named packages, not their "
+                                "dependencies")
+    p_install.add_argument("-U", "--upgrade", action="store_true",
+                           help="Reinstall to the newest compatible version "
+                                "even if one is already installed")
     p_install.add_argument("--dry-run", action="store_true",
                            help="Resolve only; do not download or install")
     p_install.add_argument("--force-reinstall", action="store_true",

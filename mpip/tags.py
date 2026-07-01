@@ -68,6 +68,42 @@ def _mac_platforms():
     return plats
 
 
+def _manylinux_platforms(glibc_major, glibc_minor, arch):
+    """Generate glibc/manylinux platform tags, newest→oldest.
+
+    A wheel tagged ``manylinux_2_N_<arch>`` needs glibc >= 2.N, so the system is
+    compatible with every tag from its own glibc version down to the manylinux
+    baselines. We also emit the legacy aliases (manylinux1/2010/2014).
+    """
+    plats = []
+    # PEP 600 perennial tags from the running glibc down to the 2.5 floor.
+    floor = 5 if arch in ("x86_64", "i686") else 17
+    for minor in range(glibc_minor, floor - 1, -1):
+        plats.append(f"manylinux_{glibc_major}_{minor}_{arch}")
+        if (glibc_major, minor) == (2, 17):
+            plats.append(f"manylinux2014_{arch}")
+        elif (glibc_major, minor) == (2, 12):
+            plats.append(f"manylinux2010_{arch}")
+        elif (glibc_major, minor) == (2, 5):
+            plats.append(f"manylinux1_{arch}")
+    return plats
+
+
+def _linux_platforms():
+    arch = platform.machine() or "x86_64"
+    plats = []
+    try:
+        libc_name, libc_ver = platform.libc_ver()
+    except OSError:
+        libc_name, libc_ver = "", ""
+    if libc_name == "glibc" and libc_ver:
+        parts = libc_ver.split(".")
+        major, minor = int(parts[0]), int(parts[1] if len(parts) > 1 else 0)
+        plats.extend(_manylinux_platforms(major, minor, arch))
+    plats.append(f"linux_{arch}")
+    return plats
+
+
 def _generic_platform():
     plat = sysconfig.get_platform()  # e.g. 'macosx-14.0-arm64', 'linux-x86_64'
     return re.sub(r"[-.]", "_", plat)
@@ -78,6 +114,8 @@ def platform_tags():
         mac = _mac_platforms()
         if mac:
             return mac
+    if sys.platform.startswith("linux"):
+        return _linux_platforms()
     return [_generic_platform()]
 
 
