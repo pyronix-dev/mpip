@@ -72,6 +72,8 @@ class Installer:
         self.scripts_dir = scripts_dir or scripts_dir_for(target)
         self.log = log
         self.force = force
+        # Console-script names created this run (used to warn about PATH).
+        self.created_scripts: list[str] = []
 
     def install(self, candidate: Candidate) -> None:
         if not candidate.is_wheel:
@@ -203,6 +205,7 @@ class Installer:
                     fh.write(content)
                 _make_executable(script_path)
                 installed_files.append(script_path)
+                self.created_scripts.append(script_name.strip())
 
 
 def _make_executable(path: str):

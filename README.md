@@ -35,21 +35,27 @@ library (`urllib`, `zipfile`, `json`, …). No `pip`, no `packaging`, no
 
 ## Install
 
-mpip is a single pure-Python package. Clone it and either run it in place or
-install it (using mpip itself, or pip if you like):
+mpip is a single pure-Python package with no dependencies. Clone it and either
+run it in place or install it so you get the `mpip` command on your `PATH`:
 
 ```bash
 git clone https://github.com/pyronix-dev/mpip.git
 cd mpip
 
-# run without installing
+# run it straight from the clone, no install needed
 python -m mpip --help
+python -m mpip install requests
 
-# or install mpip into your per-user site-packages, using mpip itself (meta!)
-python -m mpip install --user mpip
-# ...or the classic way
-pip install .
+# or install it so `mpip` works as a command anywhere
+pip install .        # or: pipx install .
 ```
+
+> **Heads up:** don't run `mpip install mpip` — the name `mpip` on PyPI belongs
+> to an unrelated project, so that would fetch *that* package, not this one.
+> This mpip is installed from the clone with `pip install .` (above). If you
+> install into a user/target directory, the generated `mpip` launcher goes to
+> that scheme's `bin/`, which may not be on your `PATH` — mpip prints the exact
+> `export PATH=...` line to fix it when that happens.
 
 ## Usage
 

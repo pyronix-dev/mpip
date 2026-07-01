@@ -61,6 +61,20 @@ def cmd_install(args) -> int:
         print("(dry run — nothing installed)")
         return 0
 
+    # Fail before installing anything if the plan needs an sdist we can't build,
+    # so we never leave a half-installed environment behind.
+    sdists = [c for c in plan if not c.is_wheel]
+    if sdists:
+        names = ", ".join(f"{c.name}=={c.version}" for c in sdists)
+        print(
+            f"error: no compatible wheel is published for: {names}\n"
+            f"       mpip installs wheels only (it does not build sdists), so "
+            f"nothing was installed.\n"
+            f"       Re-run without these, or install them with pip.",
+            file=sys.stderr,
+        )
+        return 1
+
     import sysconfig
     from .installer import _user_scheme
     if args.target:
@@ -85,7 +99,27 @@ def cmd_install(args) -> int:
         return 1
 
     print(f"Successfully installed {len(plan)} package(s).")
+    _warn_if_scripts_not_on_path(scripts_dir, installer.created_scripts)
     return 0
+
+
+def _warn_if_scripts_not_on_path(scripts_dir, script_names):
+    if not script_names:
+        return
+    path_dirs = {
+        os.path.normcase(os.path.normpath(p))
+        for p in os.environ.get("PATH", "").split(os.pathsep)
+        if p
+    }
+    if os.path.normcase(os.path.normpath(scripts_dir)) in path_dirs:
+        return
+    names = ", ".join(sorted(set(script_names)))
+    print(
+        f"\nwarning: the script(s) {names} were installed in {scripts_dir},\n"
+        f"         which is not on your PATH. To run them by name, add it:\n"
+        f'           export PATH="{scripts_dir}:$PATH"',
+        file=sys.stderr,
+    )
 
 
 def cmd_download(args) -> int:
