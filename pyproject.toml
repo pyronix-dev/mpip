@@ -24,9 +24,9 @@ classifiers = [
 dependencies = []
 
 [project.urls]
-Homepage = "https://github.com/OmarRafik/mpip"
-Repository = "https://github.com/OmarRafik/mpip"
-Issues = "https://github.com/OmarRafik/mpip/issues"
+Homepage = "https://github.com/pyronix-dev/mpip"
+Repository = "https://github.com/pyronix-dev/mpip"
+Issues = "https://github.com/pyronix-dev/mpip/issues"
 
 [project.scripts]
 mpip = "mpip.cli:main"

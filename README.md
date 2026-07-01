@@ -39,7 +39,7 @@ mpip is a single pure-Python package. Clone it and either run it in place or
 install it (using mpip itself, or pip if you like):
 
 ```bash
-git clone https://github.com/OmarRafik/mpip.git
+git clone https://github.com/pyronix-dev/mpip.git
 cd mpip
 
 # run without installing
