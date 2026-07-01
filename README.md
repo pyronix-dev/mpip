@@ -45,8 +45,8 @@ cd mpip
 # run without installing
 python -m mpip --help
 
-# or install mpip into your environment...
-python -m mpip install --target ~/.local/lib/pythonX.Y/site-packages mpip  # meta!
+# or install mpip into your per-user site-packages, using mpip itself (meta!)
+python -m mpip install --user mpip
 # ...or the classic way
 pip install .
 ```
